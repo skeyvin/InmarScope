@@ -39,9 +39,15 @@ and implot from ```https://github.com/epezent/implot```
 Requires MSYS2/MinGW-w64 with the following:
 
 ```
-pacman -S mingw-w64-x86_64-{cmake,ninja,gcc,glfw,rtl-sdr,hackrf,zstd,libogg,libvorbis}
+pacman -S mingw-w64-x86_64-{cmake,ninja,gcc,glfw,rtl-sdr,hackrf,zstd,libogg,libvorbis,tools}
 ```
-
+you will need to generate a ```.dll.a``` file for mingw
+do
+```
+gendef WebView2Loader.dll
+dlltool -d WebView2Loader.def  -l libWebView2Loader.dll.a  -D WebView2Loader.dll
+```
+in ```\third_party\webview2\build\native\x64```
 Additional dependencies vendored in `third_party/`:
 - Dear ImGui (docking branch)
 - ImPlot
