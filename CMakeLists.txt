@@ -134,6 +134,23 @@ add_subdirectory(third_party/libacars ${CMAKE_BINARY_DIR}/libacars EXCLUDE_FROM_
 # ---------------------------------------------------------------------------
 # InmarScope application
 # ---------------------------------------------------------------------------
+set(PLATFORM_SOURCES)
+
+if(WIN32)
+    list(APPEND PLATFORM_SOURCES
+       # src/web/web_server.cpp
+        src/web/flight_map_webview.cpp
+    )
+
+    # Microsoft Edge WebView2
+    set(WEBVIEW2_ROOT ${CMAKE_SOURCE_DIR}/third_party/webview2/build/native)
+    find_library(WEBVIEW2_LIB
+        WebView2Loader
+        PATHS ${WEBVIEW2_ROOT}/x64
+        NO_DEFAULT_PATH
+        REQUIRED
+    )
+endif()
 add_executable(InmarScope
     src/main.cpp
     src/signal/processing.cpp
@@ -165,20 +182,25 @@ add_executable(InmarScope
     src/store/message_store.cpp
     src/output/message_feed.cpp
     src/update/version_check.cpp
-    src/web/flight_map_webview.cpp
+   # src/web/flight_map_webview.cpp
+    ${PLATFORM_SOURCES}
 )
 # Microsoft Edge WebView2 for the embedded Flight Map browser.
-set(WEBVIEW2_ROOT ${CMAKE_SOURCE_DIR}/third_party/webview2/build/native)
-find_library(WEBVIEW2_LIB WebView2Loader.dll PATHS ${WEBVIEW2_ROOT}/x64 NO_DEFAULT_PATH REQUIRED)
+#set(WEBVIEW2_ROOT ${CMAKE_SOURCE_DIR}/third_party/webview2/build/native)
+#find_library(WEBVIEW2_LIB WebView2Loader.dll PATHS ${WEBVIEW2_ROOT}/x64 NO_DEFAULT_PATH REQUIRED)
 target_include_directories(InmarScope PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/third_party/mbelib
     ${CMAKE_SOURCE_DIR}/third_party/miniaudio
     ${CMAKE_SOURCE_DIR}/third_party/libacars
-    ${WEBVIEW2_ROOT}/include
     ${RTLSDR_INCLUDE_DIRS}
     ${HACKRF_INCLUDE_DIRS}
 )
+if(WIN32)
+    target_include_directories(InmarScope PRIVATE
+        ${WEBVIEW2_ROOT}/include
+    )
+endif()
 target_compile_definitions(InmarScope PRIVATE _USE_MATH_DEFINES)
 if(AIRSPY_FOUND)
     target_sources(InmarScope PRIVATE src/sdr/airspy_source.cpp)
@@ -201,7 +223,24 @@ if(NOT OGG_FOUND OR NOT VORBIS_FOUND)
     find_library(VORBISENC_LIBRARIES NAMES vorbisenc libvorbisenc REQUIRED)
 endif()
 
-target_link_libraries(InmarScope PRIVATE imgui jaero_dsp mbelib acars_static ${ZLIB_LIB} ${RTLSDR_LIBRARIES} ${HACKRF_LIBRARIES} ${ZSTD_LIBRARIES} ${OGG_LIBRARIES} ${VORBIS_LIBRARIES} ${VORBISENC_LIBRARIES} ${WEBVIEW2_LIB} ${SQLITE3_LIB})
+target_link_libraries(InmarScope PRIVATE
+    imgui
+    jaero_dsp
+    mbelib
+    acars_static
+    ${ZLIB_LIB}
+    ${RTLSDR_LIBRARIES}
+    ${HACKRF_LIBRARIES}
+    ${ZSTD_LIBRARIES}
+    ${OGG_LIBRARIES}
+    ${VORBIS_LIBRARIES}
+    ${VORBISENC_LIBRARIES}
+    ${SQLITE3_LIB}
+)
+
+if(WIN32)
+    target_link_libraries(InmarScope PRIVATE ${WEBVIEW2_LIB})
+endif()
 if(AIRSPY_FOUND)
     target_link_libraries(InmarScope PRIVATE ${AIRSPY_LIBRARIES})
 endif()
@@ -255,10 +294,5 @@ if(WIN32)
             message(WARNING "Runtime DLL not found: ${MINGW_BIN}/${dll}")
         endif()
     endforeach()
-    # WebView2Loader.dll is not in the MINGW bin dir — copy from vendored SDK.
-    add_custom_command(TARGET InmarScope POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${WEBVIEW2_ROOT}/x64/WebView2Loader.dll"
-                "$<TARGET_FILE_DIR:InmarScope>"
-        COMMENT "Copying WebView2Loader.dll")
+
 endif()

@@ -250,7 +250,9 @@ int main(int, char**)
         drawAircraft(app);
         drawVoiceCalls(app);
         drawLesFreq(app);
+#ifdef _WIN32
         drawFlightMap(app);
+#endif
         drawConstellation(app);
         drawAbout(app);
 

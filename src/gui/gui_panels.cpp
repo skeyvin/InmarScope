@@ -1769,7 +1769,7 @@ void drawNetwork(App& app)
 
     ImGui::End();
 }
-
+#ifdef _WIN32
 void drawFlightMap(App& app)
 {
     ImGui::Begin("Flight Map");
@@ -1808,7 +1808,7 @@ void drawFlightMap(App& app)
         ImGui::TextDisabled("No aircraft with ICAO yet.");
     }
 
-#if defined(_WIN32)
+
     if (!app.flightMapWv.isReady())
     {
         ImGui::TextDisabled("  Loading map...");
@@ -1831,13 +1831,11 @@ void drawFlightMap(App& app)
         lastIcao = pick->icao;
         app.flightMapWv.setIcao(pick->icao);
     }
-#else
-    ImGui::TextDisabled("WebView2 map requires Windows.");
-#endif
+
 
     ImGui::End();
 }
-
+#endif
 void drawEgc(App& app)
 {
     ImGui::Begin("EGC");

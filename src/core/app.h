@@ -13,14 +13,15 @@
 #include "sdr/sdrpp_server_source.h"
 #include "sdr/iq_recorder.h"
 #include "audio/audio_player.h"
-#include "web/web_server.h"
+#ifdef _WIN32
+#include "web/flight_map_webview.h"
+#endif
 #include "store/message_store.h"
 #include "decode/band_plan.h"
 #include "decode/decoder_manager.h"
 #include "output/message_feed.h"
 #include "update/version_check.h"
-#include "web/flight_map_webview.h"
-
+#include "web/web_server.h"
 #include <chrono>
 #include <string>
 #include <utility>
@@ -153,7 +154,9 @@ struct App
     // Output
     MessageFeed feed;
     VersionCheck verCheck;
+#ifdef _WIN32
     FlightMapWebView flightMapWv;
+#endif
     uint64_t lastAcarsFed = 0, lastEgcFed = 0, lastLesFed = 0;
     bool   outFile = false;
     char   outFilePath[512] = "messages.jsonl";
