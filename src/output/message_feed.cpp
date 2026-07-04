@@ -15,7 +15,9 @@ using socket_t = SOCKET;
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#ifdef __linux__
 #include <netdb.h>
+#endif
 #include <unistd.h>
 using socket_t = int;
 #define INVALID_SOCKET (-1)
