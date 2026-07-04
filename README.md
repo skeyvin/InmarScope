@@ -22,10 +22,24 @@ Windows Download: https://sarahsforge.dev/products/inmarscope
 
 ## Building
 
+get libacars from ```github.com/szpajder/libacars/```
+in ```libacars/libacars/CMakeLists.txt``` add the following after line 190
+```target_link_libraries (acars ${acars_extra_libs})``` so it looks like 
+```
+add_library(acars SHARED ${acars_obj_files})
+target_link_libraries (acars ${acars_extra_libs})
+set_property (TARGET acars PROPERTY SOVERSION ${LA_VERSION_MAJOR})
+set_target_properties(acars PROPERTIES OUTPUT_NAME "acars-${LA_VERSION_MAJOR}")
+```
+add imgui docking branch from ```https://github.com/ocornut/imgui```
+and implot from ```https://github.com/epezent/implot```
+
+
+
 Requires MSYS2/MinGW-w64 with the following:
 
 ```
-pacman -S mingw-w64-x86_64-{cmake,ninja,gcc,glfw,rtl-sdr,hackrf,zstd,ogg,vorbis}
+pacman -S mingw-w64-x86_64-{cmake,ninja,gcc,glfw,rtl-sdr,hackrf,zstd,libogg,libvorbis}
 ```
 
 Additional dependencies vendored in `third_party/`:
@@ -35,10 +49,9 @@ Additional dependencies vendored in `third_party/`:
 
 Build:
 
-```
-mkdir build && cd build
-cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
-ninja
+```bash
+cmake -S . -B build -G Ninja
+ninja -C build
 ```
 
 ## License
