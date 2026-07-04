@@ -144,12 +144,13 @@ if(WIN32)
 
     # Microsoft Edge WebView2
     set(WEBVIEW2_ROOT ${CMAKE_SOURCE_DIR}/third_party/webview2/build/native)
-    find_library(WEBVIEW2_LIB
-        WebView2Loader
-        PATHS ${WEBVIEW2_ROOT}/x64
-        NO_DEFAULT_PATH
-        REQUIRED
-    )
+set(WEBVIEW2_LIB
+    "${WEBVIEW2_ROOT}/x64/libWebView2Loader.dll.a"
+)
+
+if(NOT EXISTS "${WEBVIEW2_LIB}")
+    message(FATAL_ERROR "WebView2 not found")
+endif()
 endif()
 add_executable(InmarScope
     src/main.cpp
@@ -279,11 +280,22 @@ if(WIN32)
         libvorbis-0.dll
         libvorbisenc-2.dll
         libsqlite3-0.dll
+		libjansson-4.dll
+		libxml2-16.dll
+		libiconv-2.dll
+		libcharset-1.dll
+		liblzma-5.dll
         WebView2Loader.dll
     )
     if(AIRSPY_FOUND)
         list(APPEND FRAMESYNC_RUNTIME_DLLS libairspy.dll)
     endif()
+	add_custom_command(TARGET InmarScope POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${WEBVIEW2_ROOT}/x64/WebView2Loader.dll"
+        "$<TARGET_FILE_DIR:InmarScope>"
+    COMMENT "Copying WebView2Loader.dll"
+)
     foreach(dll ${FRAMESYNC_RUNTIME_DLLS})
         if(EXISTS "${MINGW_BIN}/${dll}")
             add_custom_command(TARGET InmarScope POST_BUILD
